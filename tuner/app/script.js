@@ -1,6 +1,3 @@
-<html>
-<head>
-<script>
 // Define the set of test frequencies that we'll use to analyze microphone data.
 var C2 = 65.41; // C2 note, in Hz.
 var notes = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ];
@@ -9,15 +6,20 @@ for (var i = 0; i < 30; i++)
 {
 	var note_frequency = C2 * Math.pow(2, i / 12);
 	var note_name = notes[i % 12];
-	var note = { "frequency": note_frequency, "name": note_name };
-	var just_above = { "frequency": note_frequency * Math.pow(2, 1 / 48), "name": note_name + " (a bit sharp)" };
-	var just_below = { "frequency": note_frequency * Math.pow(2, -1 / 48), "name": note_name + " (a bit flat)" };
+    var note = { "frequency": note_frequency, "name": note_name };
+    
+    // Add a Bit sharp.
+    var just_above = { "frequency": note_frequency * Math.pow(2, 1 / 48), "name": note_name };
+    
+    // Add a Bit Flat.
+    var just_below = { "frequency": note_frequency * Math.pow(2, -1 / 48), "name": note_name };
+    
 	test_frequencies = test_frequencies.concat([ just_below, note, just_above ]);
 }
 
 window.addEventListener("load", initialize);
 
-var correlation_worker = new Worker("correlation_worker.js");
+var correlation_worker = new Worker("./app/correlation_worker.js");
 correlation_worker.addEventListener("message", interpret_correlation_result);
 
 function initialize()
@@ -27,7 +29,6 @@ function initialize()
 	get_user_media = get_user_media || navigator.mozGetUserMedia;
 	get_user_media.call(navigator, { "audio": true }, use_stream, function() {});
 
-	document.getElementById("play-note").addEventListener("click", toggle_playing_note);
 }
 
 function use_stream(stream)
@@ -105,43 +106,7 @@ function interpret_correlation_result(event)
 	if (confidence > confidence_threshold)
 	{
 		var dominant_frequency = test_frequencies[maximum_index];
-		document.getElementById("note-name").textContent = dominant_frequency.name;
+		document.getElementById("note").textContent = dominant_frequency.name;
 		document.getElementById("frequency").textContent = dominant_frequency.frequency;
 	}
 }
-
-// Unnecessary addition of button to play an E note.
-var note_context = new AudioContext();
-var note_node = note_context.createOscillator();
-var gain_node = note_context.createGain();
-note_node.frequency = C2 * Math.pow(2, 4 / 12); // E, ~82.41 Hz.
-gain_node.gain.value = 0;
-note_node.connect(gain_node);
-gain_node.connect(note_context.destination);
-note_node.start();
-
-var playing = false;
-function toggle_playing_note()
-{
-	playing = !playing;
-	if (playing)
-		gain_node.gain.value = 0.1;
-	else
-		gain_node.gain.value = 0;
-}
-</script>
-</head>
-
-<body>
-<p>It sounds like you're playing...</p>
-<h1 id="note-name"></h1>
-<p>
-	<span>frequency (Hz):</span>
-	<span id="frequency"></span>
-</p>
-<hr>
-<button id="play-note">start/stop an E note</button>
-<hr>
-<a href="https://github.com/jbergknoff/guitar-tuner">Source code</a> / <a href="http://jonathan.bergknoff.com/journal/making-a-guitar-tuner-html5">Explanatory article</a>
-</body>
-</html>

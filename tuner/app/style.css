@@ -1,0 +1,24 @@
+body {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    font-family: helvetica;
+    background: url('background.jpg') no-repeat center;
+    background-size: cover;
+}
+
+#wrapper {
+    width: 50vw;
+    overflow: hidden;
+    text-align: center;
+    color: #fff;
+}
+
+#note {
+    font-size: 4rem;
+    font-weight: 900;
+}
+
+#frequency {
+    font-weight: 100;
+}
